@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints List - University Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .list-page { margin-left: 280px; padding: 2rem; }
+        .list-header { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .list-header h1 { font-size: 2rem; margin: 0; }
+        .list-header-right { display: flex; gap: 1rem; align-items: center; }
+        .search-box { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.7rem 1rem; border-radius: 8px; color: white; width: 250px; }
+        .search-box::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .btn-add { background: white; color: var(--primary-color); border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .list-wrapper { background: white; padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
+        .list-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 1.5rem; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .stat-card p { margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f5f5f5; }
+        th { padding: 1rem; text-align: left; font-weight: 600; color: var(--dark-color); border-bottom: 2px solid #e0e0e0; }
+        td { padding: 1rem; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f9f9f9; }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-open { background: #fff3cd; color: #856404; }
+        .status-resolved { background: #d4edda; color: #155724; }
+        .status-pending { background: #cfe2ff; color: #084298; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .btn-action { padding: 0.5rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-view { background: #4ECDC4; color: white; }
+        .btn-edit { background: #FFD93D; color: #333; }
+        .btn-delete { background: #FF6B6B; color: white; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); }
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+        .pagination button { padding: 0.5rem 0.8rem; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 5px; }
+        .pagination button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .empty-state { text-align: center; padding: 3rem; color: #999; }
+        @media (max-width: 768px) { .list-page { margin-left: 0; padding: 1rem; } .list-header { flex-direction: column; text-align: center; gap: 1rem; } .search-box { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="sidebar"></div>
+    <div class="list-page">
+        <div class="list-header">
+            <div>
+                <h1><i class="fas fa-exclamation-circle"></i> Complaints</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage complaints</p>
+            </div>
+            <div class="list-header-right">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search complaints...">
+                <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Add Complaint</button>
+            </div>
+        </div>
+
+        <div class="list-stats">
+            <div class="stat-card"><h3 id="totalComplaints">0</h3><p>Total Complaints</p></div>
+            <div class="stat-card"><h3 id="openComplaints">0</h3><p>Open</p></div>
+        </div>
+
+        <div class="list-wrapper">
+            <div class="table-responsive">
+                <table id="complaintTable">
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Subject</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Complaints Found</h3>
+                </div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <div id="complaintModal" class="modal">
+        <div class="modal-background" onclick="closeAddModal()"></div>
+        <div class="modal-content">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title" id="modalTitle">Add New Complaint</p>
+                    <button class="delete" aria-label="close" onclick="closeAddModal()"></button>
+                </header>
+                <section class="modal-card-body">
+                    <form id="complaintForm">
+                        <div class="field">
+                            <label class="label">Subject <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="text" id="complaintSubject" placeholder="Subject" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Category <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="complaintCategory" required>
+                                        <option value="">Select Category</option>
+                                        <option value="Hostel">Hostel</option>
+                                        <option value="Academics">Academics</option>
+                                        <option value="Infrastructure">Infrastructure</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Description <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><textarea class="textarea" id="complaintDesc" placeholder="Description" required></textarea></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="complaintStatus">
+                                        <option value="open">Open</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="resolved">Resolved</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" onclick="closeAddModal()">Cancel</button>
+                    <button class="button is-primary" onclick="saveComplaint()">Save Complaint</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/menu-data.js"></script>
+    <script>
+        let complaints = [];
+        let filteredComplaints = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+
+        function loadSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = `
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-graduation-cap"></i> University Portal</h2>
+                    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                <ul class="sidebar-menu"></ul>
+            `;
+            renderMenu();
+        }
+
+        function init() {
+            loadSidebar();
+            loadComplaints();
+            displayComplaints();
+            updateStats();
+        }
+
+        function loadComplaints() {
+            const saved = localStorage.getItem('complaintsListData');
+            if (saved) {
+                complaints = JSON.parse(saved);
+            } else {
+                complaints = [
+                    { id: 'CMP001', subject: 'Hostel Maintenance', category: 'Hostel', date: '2024-11-15', status: 'open' },
+                    { id: 'CMP002', subject: 'Lab Equipment Issue', category: 'Infrastructure', date: '2024-11-14', status: 'pending' },
+                    { id: 'CMP003', subject: 'Course Content', category: 'Academics', date: '2024-11-13', status: 'resolved' },
+                    { id: 'CMP004', subject: 'Canteen Service', category: 'Other', date: '2024-11-12', status: 'open' },
+                    { id: 'CMP005', subject: 'Library Issue', category: 'Infrastructure', date: '2024-11-11', status: 'pending' }
+                ];
+                saveComplaints();
+            }
+            filteredComplaints = [...complaints];
+        }
+
+        function saveComplaints() {
+            localStorage.setItem('complaintsListData', JSON.stringify(complaints));
+        }
+
+        function displayComplaints() {
+            const tbody = document.getElementById('complaintTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedComplaints = filteredComplaints.slice(start, end);
+
+            if (paginatedComplaints.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = paginatedComplaints.map(c => `
+                <tr>
+                    <td><strong>${c.id}</strong></td>
+                    <td>${c.subject}</td>
+                    <td>${c.category}</td>
+                    <td>${new Date(c.date).toLocaleDateString()}</td>
+                    <td><span class="status-badge status-${c.status}">${c.status.charAt(0).toUpperCase() + c.status.slice(1)}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-view" onclick="viewComplaint(${complaints.indexOf(c)})" title="View"><i class="fas fa-eye"></i></button>
+                            <button class="btn-action btn-edit" onclick="editComplaint(${complaints.indexOf(c)})" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteComplaint(${complaints.indexOf(c)})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            const totalPages = Math.ceil(filteredComplaints.length / itemsPerPage);
+            let paginationHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        function filterComplaints() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredComplaints = complaints.filter(c => c.subject.toLowerCase().includes(searchTerm) || c.id.includes(searchTerm));
+            currentPage = 1;
+            displayComplaints();
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Complaint';
+            document.getElementById('complaintForm').reset();
+            document.getElementById('complaintModal').classList.add('is-active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('complaintModal').classList.remove('is-active');
+        }
+
+        function saveComplaint() {
+            const subject = document.getElementById('complaintSubject').value.trim();
+            const category = document.getElementById('complaintCategory').value;
+            const desc = document.getElementById('complaintDesc').value.trim();
+            const status = document.getElementById('complaintStatus').value;
+
+            if (!subject || !category || !desc) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            if (editingId !== null) {
+                complaints[editingId].subject = subject;
+                complaints[editingId].category = category;
+                complaints[editingId].status = status;
+            } else {
+                complaints.push({
+                    id: 'CMP' + String(Date.now()).slice(-6),
+                    subject,
+                    category,
+                    date: new Date().toISOString().split('T')[0],
+                    status
+                });
+            }
+
+            saveComplaints();
+            filteredComplaints = [...complaints];
+            currentPage = 1;
+            displayComplaints();
+            updateStats();
+            closeAddModal();
+        }
+
+        function editComplaint(index) {
+            const c = complaints[index];
+            editingId = index;
+            document.getElementById('modalTitle').textContent = 'Edit Complaint';
+            document.getElementById('complaintSubject').value = c.subject;
+            document.getElementById('complaintCategory').value = c.category;
+            document.getElementById('complaintStatus').value = c.status;
+            document.getElementById('complaintModal').classList.add('is-active');
+        }
+
+        function deleteComplaint(index) {
+            if (confirm('Are you sure?')) {
+                complaints.splice(index, 1);
+                saveComplaints();
+                filteredComplaints = [...complaints];
+                currentPage = 1;
+                displayComplaints();
+                updateStats();
+            }
+        }
+
+        function viewComplaint(index) {
+            const c = complaints[index];
+            alert(`Complaint: ${c.subject}\nID: ${c.id}\nCategory: ${c.category}\nDate: ${c.date}\nStatus: ${c.status}`);
+        }
+
+        function updateStats() {
+            document.getElementById('totalComplaints').textContent = complaints.length;
+            document.getElementById('openComplaints').textContent = complaints.filter(c => c.status === 'open').length;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displayComplaints();
+            window.scrollTo(0, 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            document.getElementById('searchInput').addEventListener('input', filterComplaints);
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userData');
+                window.location.href = '../login.html';
+            }
+        }
+    </script>
+</body>
+</html>

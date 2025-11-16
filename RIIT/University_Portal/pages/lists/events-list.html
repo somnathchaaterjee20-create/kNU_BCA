@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events List - University Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .list-page { margin-left: 280px; padding: 2rem; }
+        .list-header { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .list-header h1 { font-size: 2rem; margin: 0; }
+        .list-header-right { display: flex; gap: 1rem; align-items: center; }
+        .search-box { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.7rem 1rem; border-radius: 8px; color: white; width: 250px; }
+        .search-box::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .btn-add { background: white; color: var(--primary-color); border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .list-wrapper { background: white; padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
+        .list-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 1.5rem; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .stat-card p { margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f5f5f5; }
+        th { padding: 1rem; text-align: left; font-weight: 600; color: var(--dark-color); border-bottom: 2px solid #e0e0e0; }
+        td { padding: 1rem; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f9f9f9; }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-upcoming { background: #d4edda; color: #155724; }
+        .status-ongoing { background: #cfe2ff; color: #084298; }
+        .status-completed { background: #e2e3e5; color: #383d41; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .btn-action { padding: 0.5rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-edit { background: #FFD93D; color: #333; }
+        .btn-delete { background: #FF6B6B; color: white; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); }
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+        .pagination button { padding: 0.5rem 0.8rem; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 5px; }
+        .pagination button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .empty-state { text-align: center; padding: 3rem; color: #999; }
+        @media (max-width: 768px) { .list-page { margin-left: 0; padding: 1rem; } .list-header { flex-direction: column; text-align: center; gap: 1rem; } .search-box { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="sidebar"></div>
+    <div class="list-page">
+        <div class="list-header">
+            <div>
+                <h1><i class="fas fa-calendar-check"></i> Events List</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage all events</p>
+            </div>
+            <div class="list-header-right">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search events...">
+                <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Add Event</button>
+            </div>
+        </div>
+
+        <div class="list-stats">
+            <div class="stat-card"><h3 id="totalEvents">0</h3><p>Total Events</p></div>
+            <div class="stat-card"><h3 id="upcomingEvents">0</h3><p>Upcoming</p></div>
+        </div>
+
+        <div class="list-wrapper">
+            <div class="table-responsive">
+                <table id="eventTable">
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Capacity</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Events Found</h3>
+                </div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <div id="eventModal" class="modal">
+        <div class="modal-background" onclick="closeAddModal()"></div>
+        <div class="modal-content">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title" id="modalTitle">Add New Event</p>
+                    <button class="delete" aria-label="close" onclick="closeAddModal()"></button>
+                </header>
+                <section class="modal-card-body">
+                    <form id="eventForm">
+                        <div class="field">
+                            <label class="label">Event Name <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="text" id="eventName" placeholder="Event Name" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Date <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="date" id="eventDate" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Location <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="text" id="eventLocation" placeholder="Location" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Capacity <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="number" id="eventCapacity" placeholder="Capacity" min="1" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="eventStatus">
+                                        <option value="upcoming">Upcoming</option>
+                                        <option value="ongoing">Ongoing</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" onclick="closeAddModal()">Cancel</button>
+                    <button class="button is-primary" onclick="saveEvent()">Save Event</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/menu-data.js"></script>
+    <script>
+        let events = [];
+        let filteredEvents = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+
+        function loadSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = `
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-graduation-cap"></i> University Portal</h2>
+                    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                <ul class="sidebar-menu"></ul>
+            `;
+            renderMenu();
+        }
+
+        function init() {
+            loadSidebar();
+            loadEvents();
+            displayEvents();
+            updateStats();
+        }
+
+        function loadEvents() {
+            const saved = localStorage.getItem('eventsListData');
+            if (saved) {
+                events = JSON.parse(saved);
+            } else {
+                events = [
+                    { id: 1, name: 'Annual Fest', date: '2024-12-15', location: 'Main Campus', capacity: 500, status: 'upcoming' },
+                    { id: 2, name: 'Tech Summit', date: '2024-11-20', location: 'Auditorium', capacity: 300, status: 'upcoming' },
+                    { id: 3, name: 'Sports Day', date: '2024-11-10', location: 'Sports Ground', capacity: 1000, status: 'upcoming' },
+                    { id: 4, name: 'Seminar on AI', date: '2024-10-25', location: 'Conference Hall', capacity: 200, status: 'completed' },
+                    { id: 5, name: 'Career Fair', date: '2024-12-01', location: 'Main Hall', capacity: 400, status: 'upcoming' }
+                ];
+                saveEvents();
+            }
+            filteredEvents = [...events];
+        }
+
+        function saveEvents() {
+            localStorage.setItem('eventsListData', JSON.stringify(events));
+        }
+
+        function displayEvents() {
+            const tbody = document.getElementById('eventTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedEvents = filteredEvents.slice(start, end);
+
+            if (paginatedEvents.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = paginatedEvents.map(e => `
+                <tr>
+                    <td><strong>${e.name}</strong></td>
+                    <td>${new Date(e.date).toLocaleDateString()}</td>
+                    <td>${e.location}</td>
+                    <td>${e.capacity}</td>
+                    <td><span class="status-badge status-${e.status}">${e.status.charAt(0).toUpperCase() + e.status.slice(1)}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editEvent(${e.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteEvent(${e.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+            let paginationHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        function filterEvents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredEvents = events.filter(e => e.name.toLowerCase().includes(searchTerm) || e.location.toLowerCase().includes(searchTerm));
+            currentPage = 1;
+            displayEvents();
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Event';
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventModal').classList.add('is-active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('eventModal').classList.remove('is-active');
+        }
+
+        function saveEvent() {
+            const name = document.getElementById('eventName').value.trim();
+            const date = document.getElementById('eventDate').value;
+            const location = document.getElementById('eventLocation').value.trim();
+            const capacity = parseInt(document.getElementById('eventCapacity').value);
+            const status = document.getElementById('eventStatus').value;
+
+            if (!name || !date || !location || !capacity) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            if (editingId) {
+                const e = events.find(x => x.id === editingId);
+                if (e) {
+                    e.name = name;
+                    e.date = date;
+                    e.location = location;
+                    e.capacity = capacity;
+                    e.status = status;
+                }
+            } else {
+                events.push({
+                    id: Date.now(),
+                    name,
+                    date,
+                    location,
+                    capacity,
+                    status
+                });
+            }
+
+            saveEvents();
+            filteredEvents = [...events];
+            currentPage = 1;
+            displayEvents();
+            updateStats();
+            closeAddModal();
+        }
+
+        function editEvent(id) {
+            const e = events.find(x => x.id === id);
+            if (e) {
+                editingId = id;
+                document.getElementById('modalTitle').textContent = 'Edit Event';
+                document.getElementById('eventName').value = e.name;
+                document.getElementById('eventDate').value = e.date;
+                document.getElementById('eventLocation').value = e.location;
+                document.getElementById('eventCapacity').value = e.capacity;
+                document.getElementById('eventStatus').value = e.status;
+                document.getElementById('eventModal').classList.add('is-active');
+            }
+        }
+
+        function deleteEvent(id) {
+            if (confirm('Are you sure?')) {
+                events = events.filter(x => x.id !== id);
+                saveEvents();
+                filteredEvents = [...events];
+                currentPage = 1;
+                displayEvents();
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalEvents').textContent = events.length;
+            document.getElementById('upcomingEvents').textContent = events.filter(e => e.status === 'upcoming').length;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displayEvents();
+            window.scrollTo(0, 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            document.getElementById('searchInput').addEventListener('input', filterEvents);
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userData');
+                window.location.href = '../login.html';
+            }
+        }
+    </script>
+</body>
+</html>

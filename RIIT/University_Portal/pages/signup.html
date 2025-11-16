@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - University Portal</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <style>
+        .signup-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .signup-tab-btn {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .signup-tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .signup-tab-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .signup-tab-content {
+            display: none;
+        }
+
+        .signup-tab-content.active {
+            display: block;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+        }
+
+        .password-strength-bar.weak {
+            width: 33%;
+            background-color: #FF6B6B;
+        }
+
+        .password-strength-bar.medium {
+            width: 66%;
+            background-color: #FFD93D;
+        }
+
+        .password-strength-bar.strong {
+            width: 100%;
+            background-color: #51CF66;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            margin-top: 0.3rem;
+            cursor: pointer;
+        }
+
+        .terms-checkbox a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .terms-checkbox a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: #999;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #e0e0e0;
+        }
+
+        .divider span {
+            margin: 0 1rem;
+            font-size: 0.9rem;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-box">
+            <h2>Create Account</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 1.5rem;">Join our university portal</p>
+
+            <!-- Signup Tabs -->
+            <div class="signup-tabs">
+                <button class="signup-tab-btn active" onclick="switchSignupTab('student')">
+                    <i class="fas fa-user-graduate"></i> Student
+                </button>
+                <button class="signup-tab-btn" onclick="switchSignupTab('teacher')">
+                    <i class="fas fa-chalkboard-user"></i> Teacher
+                </button>
+                <button class="signup-tab-btn" onclick="switchSignupTab('admin')">
+                    <i class="fas fa-user-shield"></i> Admin
+                </button>
+            </div>
+
+            <!-- Student Signup -->
+            <div id="student" class="signup-tab-content active">
+                <form id="studentSignupForm">
+                    <div class="form-group">
+                        <label for="studentName">Full Name</label>
+                        <input type="text" id="studentName" name="name" placeholder="John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentEmail">Email Address</label>
+                        <input type="email" id="studentEmail" name="email" placeholder="student@university.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentPhone">Phone Number</label>
+                        <input type="tel" id="studentPhone" name="phone" placeholder="+91 98765 43210" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentCourse">Course</label>
+                        <select id="studentCourse" name="course" required>
+                            <option value="">Select Course</option>
+                            <option value="bca">BCA</option>
+                            <option value="bba">BBA</option>
+                            <option value="mca">MCA</option>
+                            <option value="mba">MBA</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentPassword">Password</label>
+                        <input type="password" id="studentPassword" name="password" placeholder="••••••••" required>
+                        <div class="password-strength">
+                            <div class="password-strength-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentConfirmPassword">Confirm Password</label>
+                        <input type="password" id="studentConfirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="studentTerms" name="terms" required>
+                        <label for="studentTerms" style="margin: 0;">
+                            I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                        Create Account
+                    </button>
+                </form>
+
+                <p style="text-align: center; margin-top: 1.5rem; color: #666;">
+                    Already have an account? <a href="login.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Login here</a>
+                </p>
+            </div>
+
+            <!-- Teacher Signup -->
+            <div id="teacher" class="signup-tab-content">
+                <form id="teacherSignupForm">
+                    <div class="form-group">
+                        <label for="teacherName">Full Name</label>
+                        <input type="text" id="teacherName" name="name" placeholder="Dr. Jane Smith" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teacherEmail">Email Address</label>
+                        <input type="email" id="teacherEmail" name="email" placeholder="teacher@university.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teacherPhone">Phone Number</label>
+                        <input type="tel" id="teacherPhone" name="phone" placeholder="+91 98765 43210" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teacherDepartment">Department</label>
+                        <select id="teacherDepartment" name="department" required>
+                            <option value="">Select Department</option>
+                            <option value="cse">Computer Science</option>
+                            <option value="mba">Business Administration</option>
+                            <option value="eng">Engineering</option>
+                            <option value="sci">Science</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teacherPassword">Password</label>
+                        <input type="password" id="teacherPassword" name="password" placeholder="••••••••" required>
+                        <div class="password-strength">
+                            <div class="password-strength-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teacherConfirmPassword">Confirm Password</label>
+                        <input type="password" id="teacherConfirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="teacherTerms" name="terms" required>
+                        <label for="teacherTerms" style="margin: 0;">
+                            I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                        Create Account
+                    </button>
+                </form>
+
+                <p style="text-align: center; margin-top: 1.5rem; color: #666;">
+                    Already have an account? <a href="login.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Login here</a>
+                </p>
+            </div>
+
+            <!-- Admin Signup -->
+            <div id="admin" class="signup-tab-content">
+                <form id="adminSignupForm">
+                    <div class="form-group">
+                        <label for="adminName">Full Name</label>
+                        <input type="text" id="adminName" name="name" placeholder="Admin Name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminEmail">Email Address</label>
+                        <input type="email" id="adminEmail" name="email" placeholder="admin@university.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPhone">Phone Number</label>
+                        <input type="tel" id="adminPhone" name="phone" placeholder="+91 98765 43210" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminRole">Admin Role</label>
+                        <select id="adminRole" name="role" required>
+                            <option value="">Select Role</option>
+                            <option value="super_admin">Super Admin</option>
+                            <option value="admin">Admin</option>
+                            <option value="moderator">Moderator</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPassword">Password</label>
+                        <input type="password" id="adminPassword" name="password" placeholder="••••••••" required>
+                        <div class="password-strength">
+                            <div class="password-strength-bar"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminConfirmPassword">Confirm Password</label>
+                        <input type="password" id="adminConfirmPassword" name="confirmPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="terms-checkbox">
+                        <input type="checkbox" id="adminTerms" name="terms" required>
+                        <label for="adminTerms" style="margin: 0;">
+                            I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                        Create Account
+                    </button>
+                </form>
+
+                <p style="text-align: center; margin-top: 1.5rem; color: #666;">
+                    Already have an account? <a href="login.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/script.js"></script>
+
+    <script>
+        // Tab switching
+        function switchSignupTab(tabName) {
+            document.querySelectorAll('.signup-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            document.querySelectorAll('.signup-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.signup-tab-btn').classList.add('active');
+        }
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            return strength;
+        }
+
+        // Update password strength for all forms
+        document.querySelectorAll('input[type="password"]').forEach(input => {
+            if (input.name === 'password') {
+                input.addEventListener('input', function() {
+                    const strength = checkPasswordStrength(this.value);
+                    const bar = this.parentElement.querySelector('.password-strength-bar');
+                    
+                    bar.className = 'password-strength-bar';
+                    if (strength === 1) bar.classList.add('weak');
+                    else if (strength === 2) bar.classList.add('medium');
+                    else if (strength >= 3) bar.classList.add('strong');
+                });
+            }
+        });
+
+        // Form submissions
+        function handleSignupSubmit(formId, role) {
+            document.getElementById(formId).addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const password = formData.get('password');
+                const confirmPassword = formData.get('confirmPassword');
+
+                if (password !== confirmPassword) {
+                    UniversityPortal.showAlert('Passwords do not match', 'error');
+                    return;
+                }
+
+                if (!formData.get('terms')) {
+                    UniversityPortal.showAlert('Please accept terms and conditions', 'error');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Creating Account...',
+                    html: '<div class="spinner"></div>',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                setTimeout(() => {
+                    Swal.close();
+                    
+                    const userData = {
+                        name: formData.get('name'),
+                        email: formData.get('email'),
+                        phone: formData.get('phone'),
+                        role: role,
+                        registrationTime: new Date().toLocaleString()
+                    };
+
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    
+                    UniversityPortal.showAlert('Account created successfully! Redirecting to login...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                }, 1500);
+            });
+        }
+
+        // Initialize all forms
+        handleSignupSubmit('studentSignupForm', 'student');
+        handleSignupSubmit('teacherSignupForm', 'teacher');
+        handleSignupSubmit('adminSignupForm', 'admin');
+    </script>
+</body>
+</html>

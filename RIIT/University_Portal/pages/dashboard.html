@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - University Portal</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <style>
+        .dashboard-top-bar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            margin-left: 280px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #7B68FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .quick-actions button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-actions button:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .dashboard-content {
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            animation: slideInUp 0.6s ease;
+        }
+
+        .welcome-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-card p {
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            animation: slideInUp 0.6s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-card-icon {
+            font-size: 2rem;
+            padding: 0.8rem;
+            border-radius: 10px;
+            background: #f0f0f0;
+        }
+
+        .dashboard-card-title {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-card-value {
+            color: var(--dark-color);
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .dashboard-card-footer {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .recent-table {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            animation: slideInUp 0.6s ease;
+        }
+
+        .recent-table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .recent-table-header h3 {
+            color: var(--dark-color);
+            font-size: 1.2rem;
+        }
+
+        .recent-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .recent-table th {
+            background-color: #f5f5f5;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .recent-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .recent-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background-color: rgba(81, 207, 102, 0.2);
+            color: #51CF66;
+        }
+
+        .status-badge.pending {
+            background-color: rgba(255, 217, 61, 0.2);
+            color: #FFD93D;
+        }
+
+        .status-badge.inactive {
+            background-color: rgba(255, 107, 107, 0.2);
+            color: #FF6B6B;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-top-bar,
+            .dashboard-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>📚 University Portal</h3>
+        </div>
+
+        <ul class="sidebar-menu">
+            <!-- HOME -->
+            <li class="sidebar-menu-item active">
+                <a href="dashboard.html" class="sidebar-menu-link active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- STUDENT MANAGEMENT -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-users"></i>
+                    <span>Students</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="forms/student-admission.html" class="sidebar-submenu-link">Admission Form</a></li>
+                    <li><a href="forms/student-registration.html" class="sidebar-submenu-link">Registration Form</a></li>
+                    <li><a href="forms/student-application.html" class="sidebar-submenu-link">Application Form</a></li>
+                    <li><a href="forms/student-id-card.html" class="sidebar-submenu-link">ID Card Apply</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Details Page</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Edit Option</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Document Upload</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Document Download</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Deactivation</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Search</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Student ID</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Registration Number</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Bulk Student Import</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Export</a></li>
+                </ul>
+            </li>
+
+            <!-- COURSES & SUBJECTS -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-book"></i>
+                    <span>Courses</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">BCA Course</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">BBA Course</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">MCA Course</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">MBA Course</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Course List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Add Course</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Update Course</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Delete Course</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Subject List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Add Subject</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Update Subject</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Delete Subject</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Course Assign to Student</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester Assign to Student</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Course Duration Settings</a></li>
+                </ul>
+            </li>
+
+            <!-- SEMESTERS -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Semesters</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Semester 1</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 2</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 3</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 4</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 5</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 6</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 7</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 8</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester 9</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester Start Date</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester End Date</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester Duration</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester Fees</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester Subjects</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Semester Results</a></li>
+                </ul>
+            </li>
+
+            <!-- CLASS & TIME MANAGEMENT -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-clock"></i>
+                    <span>Class Management</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Class Schedule</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Class Routine</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Weekly Routine</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Monthly Routine</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Lecture Notes Upload</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Class Materials</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Video Class Link</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Virtual Class Link Save</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Zoom Link Save</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Google Meet Link Save</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Class Cancellation</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Class Rescheduling</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Class Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Class Feedback</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Class Performance Report</a></li>
+                </ul>
+            </li>
+
+            <!-- ATTENDANCE -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Attendance</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Student Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Teacher Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Attendance Report</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Daily Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Monthly Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">QR Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">NFC Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Attendance Alerts</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Attendance Summary</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Biometric Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Facial Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Attendance Correction</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Attendance Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Attendance Export</a></li>
+                </ul>
+            </li>
+
+            <!-- EXAM SYSTEM -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Exam System</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Exam Schedule</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Seating Plan</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Practical Exam</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Viva Exam</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Online Exam</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Timer System</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Submission</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hall Ticket</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Admit Card</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Notice</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Anti-Cheat System</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Question Bank</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Paper Upload</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Evaluation</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Analytics</a></li>
+                </ul>
+            </li>
+
+            <!-- RESULTS & MARKSHEET -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Results</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Marks Input by Subject</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Total Marks</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Passing Marks</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Obtained Marks</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Percentage</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Grade</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Pass/Fail</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Rank</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto CGPA</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto GPA</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Marksheet Generate</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Report Card</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Real-Time Marks Update</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Result View by Roll Number</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Result View by Reg Number</a></li>
+                </ul>
+            </li>
+
+            <!-- FEES & PAYMENT -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Fees & Payment</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Auto Fee Calculation</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Fee by Semester</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Fee by Monthly</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Fee Load by Reg Number</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Due Fee Check</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Fine Add</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Fee Structure Page</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Fee Summary Page</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Fee Receipt Download</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Fee Invoice Download</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Payment History</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Refund Request</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Refund Status</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Payment Gateway</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Payment Installment</a></li>
+                </ul>
+            </li>
+
+            <!-- LIBRARY -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-book-open"></i>
+                    <span>Library</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Library Book Search</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Book Borrow</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Book Return</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Book Availability Check</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Fine</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">E-Books</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Digital Library</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Journals</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Research Papers</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Membership</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Book Reservation</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Catalog</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Rules</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Auto Scanner</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Library Statistics</a></li>
+                </ul>
+            </li>
+
+            <!-- HOSTEL -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-building"></i>
+                    <span>Hostel</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Application</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Rules</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Room Booking</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Room Change</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Visitor Records</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Mess Menu</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Mess Bill</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Events</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Notice</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Face Recognition</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Room Allocation</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Complaint</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Maintenance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Hostel Warden</a></li>
+                </ul>
+            </li>
+
+            <!-- TRANSPORT -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-bus"></i>
+                    <span>Transport</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Bus Routes</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Bus Schedule</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Transport Fee</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Bus Pass</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Bus Tracking</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Driver Info</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Transport Notice</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Transport Complaint</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Parking Pass</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Vehicle Entry</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">GPS Bus Tracking</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Bus Maintenance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Transport Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Transport Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Digital Parking System</a></li>
+                </ul>
+            </li>
+
+            <!-- COMMUNICATION -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-comments"></i>
+                    <span>Communication</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Student Chat</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Teacher Chat</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Admin Chat</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Group Chat</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Forum</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Discussion Board</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Message Alerts</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Chat File Upload</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Voice Message</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Video Message</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Announcements</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Notifications</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Email Notifications</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">SMS Notifications</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Push Notifications</a></li>
+                </ul>
+            </li>
+
+            <!-- NOTICES & EVENTS -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Notices & Events</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Notice Board</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event Registration</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event Tickets</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Campus News</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Faculty News</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student News</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Notice Archive</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event Archive</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Media Archive</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Press Releases</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event Feedback</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Event Reminder</a></li>
+                </ul>
+            </li>
+
+            <!-- CERTIFICATES -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-certificate"></i>
+                    <span>Certificates</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Bonafide Certificate</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Migration Certificate</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Character Certificate</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">No Dues Certificate</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Digital Certificates</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Certificate Download</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Auto Certificate Verification</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student ID Card</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">QR ID Card</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Smart Card System</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Certificate Template</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Certificate Signature</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Certificate Seal</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Certificate Archive</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Certificate Analytics</a></li>
+                </ul>
+            </li>
+
+            <!-- ANALYTICS -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Attendance Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Result Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Course Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Payment Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Student Performance Chart</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Faculty Report</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Exam Analysis</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Rank Analysis</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Pass Rate Chart</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">CGPA Trend</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Subject Wise Result</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Topper List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Failed List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">AI Student Performance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">AI Rank Prediction</a></li>
+                </ul>
+            </li>
+
+            <!-- SETTINGS -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Profile Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Change Password</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Notification Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Privacy Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Theme Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Dark Mode</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Light Mode</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Language Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">UI Customization</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Data Export</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Data Import</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">API Access</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Webhooks</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">System Logs</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Activity Logs</a></li>
+                </ul>
+            </li>
+
+            <!-- HELP & SUPPORT -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help & Support</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Help Center</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">User Guide</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Video Tutorials</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">FAQ Page</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Contact Support</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Support Ticket</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Live Chat Support</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Complaint Box</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Issue Tracker</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Feedback System</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Report Issue</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Feedback</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Knowledge Base</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Community Forum</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Emergency Support</a></li>
+                </ul>
+            </li>
+
+            <!-- ONLINE LEARNING -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-video"></i>
+                    <span>Online Learning</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Video Lectures</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Quiz Module</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Assignment Upload</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Assignment Download</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Assignment Grades</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Project Upload</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Group Project</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Virtual Classroom</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Lesson Plan</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Study Materials</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Course Progress</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Learning Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Certification</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Course Completion</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Learning Path</a></li>
+                </ul>
+            </li>
+
+            <!-- STAFF & TEACHER -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-chalkboard-user"></i>
+                    <span>Staff & Teacher</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Teacher List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Teacher Documents</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Teacher Attendance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Teacher Salary</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Tasks</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Training</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Feedback</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Leave Apply</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Leave Approve</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Performance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Evaluation</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Promotion</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Increment</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Staff Directory</a></li>
+                </ul>
+            </li>
+
+            <!-- RESEARCH & PROJECT -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-flask"></i>
+                    <span>Research & Project</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Research Groups</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Research Journals</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Research Funding</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Project Submission</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Lab Booking</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Patent List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Research Events</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Lab Equipment List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Lab Rules</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Project Partners</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Research Papers</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Research Collaboration</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Lab Safety</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Research Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Publication Tracking</a></li>
+                </ul>
+            </li>
+
+            <!-- CLUBS & ACTIVITIES -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-users-alt"></i>
+                    <span>Clubs & Activities</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Student Clubs</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Tech Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Photography Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Music Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Art Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Drama Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Science Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Gaming Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Cultural Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Club</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Club Membership</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Club Events</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Club Funds</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Club Reports</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Club Directory</a></li>
+                </ul>
+            </li>
+
+            <!-- SPORTS SYSTEM -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-basketball-ball"></i>
+                    <span>Sports System</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">Sports Schedule</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Team</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Training</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Registration</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Results</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Coach Info</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Tournament List</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Notice</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Awards</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Gym Info</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Facilities</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Analytics</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Player Performance</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Events</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Sports Sponsorship</a></li>
+                </ul>
+            </li>
+
+            <!-- ADMIN PANEL -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin Panel</span>
+                </a>
+                <ul class="sidebar-submenu">
+                    <li><a href="#" class="sidebar-submenu-link">User Management</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Role Permission</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Activity Logs</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">System Logs</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Data Backup</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Data Restore</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Admin Dashboard</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Notification Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Email Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">SMS Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">System Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Security Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Database Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">Server Settings</a></li>
+                    <li><a href="#" class="sidebar-submenu-link">System Update</a></li>
+                </ul>
+            </li>
+
+            <!-- LOGOUT -->
+            <li class="sidebar-menu-item">
+                <a href="#" class="sidebar-menu-link" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Top Bar -->
+    <div class="dashboard-top-bar">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h2 style="margin: 0; color: var(--dark-color);">Dashboard</h2>
+        </div>
+
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <div>
+                <div style="font-weight: 600; color: var(--dark-color);" id="userName">User</div>
+                <div style="font-size: 0.85rem; color: #999;" id="userRole">Student</div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button title="Notifications">
+                <i class="fas fa-bell"></i>
+            </button>
+            <button title="Messages">
+                <i class="fas fa-envelope"></i>
+            </button>
+            <button onclick="handleLogout()" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dashboard-content">
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <h2>Welcome back, <span id="welcomeName">User</span>! 👋</h2>
+            <p>Here's what's happening with your account today.</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <div>
+                        <div class="dashboard-card-title">Attendance</div>
+                        <div class="dashboard-card-value">85%</div>
+                    </div>
+                    <div class="dashboard-card-icon" style="background: rgba(81, 207, 102, 0.2); color: #51CF66;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-footer">
+                    <i class="fas fa-arrow-up"></i> 5% from last month
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <div>
+                        <div class="dashboard-card-title">GPA</div>
+                        <div class="dashboard-card-value">3.8</div>
+                    </div>
+                    <div class="dashboard-card-icon" style="background: rgba(91, 79, 255, 0.2); color: var(--primary-color);">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-footer">
+                    Excellent performance
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <div>
+                        <div class="dashboard-card-title">Pending Tasks</div>
+                        <div class="dashboard-card-value">3</div>
+                    </div>
+                    <div class="dashboard-card-icon" style="background: rgba(255, 217, 61, 0.2); color: #FFD93D;">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-footer">
+                    Complete by this week
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <div>
+                        <div class="dashboard-card-title">Fee Status</div>
+                        <div class="dashboard-card-value">Paid</div>
+                    </div>
+                    <div class="dashboard-card-icon" style="background: rgba(78, 205, 196, 0.2); color: #4ECDC4;">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                </div>
+                <div class="dashboard-card-footer">
+                    All fees paid
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="recent-table">
+            <div class="recent-table-header">
+                <h3>Recent Activities</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Activity</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Attendance Marked</td>
+                        <td>Today, 10:30 AM</td>
+                        <td><span class="status-badge active">Present</span></td>
+                        <td>CSE-101 Lecture</td>
+                    </tr>
+                    <tr>
+                        <td>Assignment Submitted</td>
+                        <td>Yesterday, 5:45 PM</td>
+                        <td><span class="status-badge active">Submitted</span></td>
+                        <td>Data Structures</td>
+                    </tr>
+                    <tr>
+                        <td>Fee Payment</td>
+                        <td>2 days ago</td>
+                        <td><span class="status-badge active">Completed</span></td>
+                        <td>Semester 3 Fee</td>
+                    </tr>
+                    <tr>
+                        <td>Exam Schedule Released</td>
+                        <td>3 days ago</td>
+                        <td><span class="status-badge pending">Pending</span></td>
+                        <td>Mid-term Exams</td>
+                    </tr>
+                    <tr>
+                        <td>Result Published</td>
+                        <td>1 week ago</td>
+                        <td><span class="status-badge active">Available</span></td>
+                        <td>Semester 2 Results</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/script.js"></script>
+    <script src="../js/menu-data.js"></script>
+
+    <script>
+        // মেনু টগল করার ফাংশন
+        function toggleMenu(event, element) {
+            event.preventDefault();
+            const parent = element.closest('.sidebar-menu-item');
+            if (parent) {
+                parent.classList.toggle('active');
+            }
+        }
+
+        // লগআউট হ্যান্ডলার
+        function handleLogout() {
+            Swal.fire({
+                title: 'Logout?',
+                text: 'Are you sure you want to logout?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#5B4FFF',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Logout'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('userData');
+                    Swal.fire('Logged Out!', 'You have been logged out successfully.', 'success');
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 1500);
+                }
+            });
+        }
+
+        // পেজ লোড হলে
+        document.addEventListener('DOMContentLoaded', function() {
+            const userData = localStorage.getItem('userData');
+            
+            if (!userData) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = JSON.parse(userData);
+            const userName = user.name || 'User';
+            const userRole = user.role || 'Student';
+
+            // ইউজার ডিসপ্লে আপডেট করুন
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            const welcomeNameEl = document.getElementById('welcomeName');
+            const userAvatarEl = document.getElementById('userAvatar');
+
+            if (userNameEl) userNameEl.textContent = userName;
+            if (userRoleEl) userRoleEl.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+            if (welcomeNameEl) welcomeNameEl.textContent = userName;
+            if (userAvatarEl) userAvatarEl.textContent = userName.charAt(0).toUpperCase();
+
+            // মেনু রেন্ডার করুন
+            renderMenu();
+        });
+    </script>
+</body>
+</html>

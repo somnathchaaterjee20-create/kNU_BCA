@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Schedule - University Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .list-page { margin-left: 280px; padding: 2rem; }
+        .list-header { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .list-header h1 { font-size: 2rem; margin: 0; }
+        .list-header-right { display: flex; gap: 1rem; align-items: center; }
+        .search-box { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.7rem 1rem; border-radius: 8px; color: white; width: 250px; }
+        .search-box::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .btn-add { background: white; color: var(--primary-color); border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .list-wrapper { background: white; padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
+        .list-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 1.5rem; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .stat-card p { margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f5f5f5; }
+        th { padding: 1rem; text-align: left; font-weight: 600; color: var(--dark-color); border-bottom: 2px solid #e0e0e0; }
+        td { padding: 1rem; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f9f9f9; }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-scheduled { background: #cfe2ff; color: #084298; }
+        .status-ongoing { background: #fff3cd; color: #856404; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .btn-action { padding: 0.5rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-view { background: #4ECDC4; color: white; }
+        .btn-edit { background: #FFD93D; color: #333; }
+        .btn-delete { background: #FF6B6B; color: white; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); }
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+        .pagination button { padding: 0.5rem 0.8rem; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 5px; }
+        .pagination button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .empty-state { text-align: center; padding: 3rem; color: #999; }
+        @media (max-width: 768px) { .list-page { margin-left: 0; padding: 1rem; } .list-header { flex-direction: column; text-align: center; gap: 1rem; } .search-box { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="sidebar"></div>
+    <div class="list-page">
+        <div class="list-header">
+            <div>
+                <h1><i class="fas fa-calendar-check"></i> Exam Schedule</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">View exam schedules</p>
+            </div>
+            <div class="list-header-right">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search exams...">
+                <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Add Exam</button>
+            </div>
+        </div>
+
+        <div class="list-stats">
+            <div class="stat-card"><h3 id="totalExams">0</h3><p>Total Exams</p></div>
+            <div class="stat-card"><h3 id="scheduledExams">0</h3><p>Scheduled</p></div>
+        </div>
+
+        <div class="list-wrapper">
+            <div class="table-responsive">
+                <table id="examTable">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="examTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Exams Found</h3>
+                </div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <div id="examModal" class="modal">
+        <div class="modal-background" onclick="closeAddModal()"></div>
+        <div class="modal-content">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title" id="modalTitle">Add New Exam</p>
+                    <button class="delete" aria-label="close" onclick="closeAddModal()"></button>
+                </header>
+                <section class="modal-card-body">
+                    <form id="examForm">
+                        <div class="field">
+                            <label class="label">Subject <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="text" id="examSubject" placeholder="Subject" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Course <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="text" id="examCourse" placeholder="Course" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Date <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="date" id="examDate" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Time <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="time" id="examTime" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Duration (minutes) <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="number" id="examDuration" placeholder="Duration" min="30" step="30" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="examStatus">
+                                        <option value="scheduled">Scheduled</option>
+                                        <option value="ongoing">Ongoing</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" onclick="closeAddModal()">Cancel</button>
+                    <button class="button is-primary" onclick="saveExam()">Save Exam</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/menu-data.js"></script>
+    <script>
+        let exams = [];
+        let filteredExams = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+
+        function loadSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = `
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-graduation-cap"></i> University Portal</h2>
+                    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                <ul class="sidebar-menu"></ul>
+            `;
+            renderMenu();
+        }
+
+        function init() {
+            loadSidebar();
+            loadExams();
+            displayExams();
+            updateStats();
+        }
+
+        function loadExams() {
+            const saved = localStorage.getItem('examScheduleData');
+            if (saved) {
+                exams = JSON.parse(saved);
+            } else {
+                exams = [
+                    { id: 1, subject: 'Programming Basics', course: 'BCA', date: '2024-12-01', time: '10:00', duration: 120, status: 'scheduled' },
+                    { id: 2, subject: 'Data Structures', course: 'BCA', date: '2024-12-03', time: '14:00', duration: 120, status: 'scheduled' },
+                    { id: 3, subject: 'Business Management', course: 'BBA', date: '2024-12-02', time: '10:00', duration: 90, status: 'scheduled' },
+                    { id: 4, subject: 'Advanced Programming', course: 'MCA', date: '2024-11-28', time: '10:00', duration: 120, status: 'completed' },
+                    { id: 5, subject: 'Strategic Management', course: 'MBA', date: '2024-12-05', time: '14:00', duration: 90, status: 'scheduled' }
+                ];
+                saveExams();
+            }
+            filteredExams = [...exams];
+        }
+
+        function saveExams() {
+            localStorage.setItem('examScheduleData', JSON.stringify(exams));
+        }
+
+        function displayExams() {
+            const tbody = document.getElementById('examTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedExams = filteredExams.slice(start, end);
+
+            if (paginatedExams.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = paginatedExams.map(e => `
+                <tr>
+                    <td><strong>${e.subject}</strong></td>
+                    <td>${e.course}</td>
+                    <td>${new Date(e.date).toLocaleDateString()}</td>
+                    <td>${e.time}</td>
+                    <td>${e.duration} min</td>
+                    <td><span class="status-badge status-${e.status}">${e.status.charAt(0).toUpperCase() + e.status.slice(1)}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-view" onclick="viewExam(${exams.indexOf(e)})" title="View"><i class="fas fa-eye"></i></button>
+                            <button class="btn-action btn-edit" onclick="editExam(${exams.indexOf(e)})" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteExam(${exams.indexOf(e)})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            const totalPages = Math.ceil(filteredExams.length / itemsPerPage);
+            let paginationHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        function filterExams() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredExams = exams.filter(e => e.subject.toLowerCase().includes(searchTerm) || e.course.includes(searchTerm));
+            currentPage = 1;
+            displayExams();
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Exam';
+            document.getElementById('examForm').reset();
+            document.getElementById('examModal').classList.add('is-active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('examModal').classList.remove('is-active');
+        }
+
+        function saveExam() {
+            const subject = document.getElementById('examSubject').value.trim();
+            const course = document.getElementById('examCourse').value.trim();
+            const date = document.getElementById('examDate').value;
+            const time = document.getElementById('examTime').value;
+            const duration = parseInt(document.getElementById('examDuration').value);
+            const status = document.getElementById('examStatus').value;
+
+            if (!subject || !course || !date || !time || !duration) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            if (editingId !== null) {
+                exams[editingId].subject = subject;
+                exams[editingId].course = course;
+                exams[editingId].date = date;
+                exams[editingId].time = time;
+                exams[editingId].duration = duration;
+                exams[editingId].status = status;
+            } else {
+                exams.push({
+                    id: Date.now(),
+                    subject,
+                    course,
+                    date,
+                    time,
+                    duration,
+                    status
+                });
+            }
+
+            saveExams();
+            filteredExams = [...exams];
+            currentPage = 1;
+            displayExams();
+            updateStats();
+            closeAddModal();
+        }
+
+        function editExam(index) {
+            const e = exams[index];
+            editingId = index;
+            document.getElementById('modalTitle').textContent = 'Edit Exam';
+            document.getElementById('examSubject').value = e.subject;
+            document.getElementById('examCourse').value = e.course;
+            document.getElementById('examDate').value = e.date;
+            document.getElementById('examTime').value = e.time;
+            document.getElementById('examDuration').value = e.duration;
+            document.getElementById('examStatus').value = e.status;
+            document.getElementById('examModal').classList.add('is-active');
+        }
+
+        function deleteExam(index) {
+            if (confirm('Are you sure?')) {
+                exams.splice(index, 1);
+                saveExams();
+                filteredExams = [...exams];
+                currentPage = 1;
+                displayExams();
+                updateStats();
+            }
+        }
+
+        function viewExam(index) {
+            const e = exams[index];
+            alert(`Subject: ${e.subject}\nCourse: ${e.course}\nDate: ${e.date}\nTime: ${e.time}\nDuration: ${e.duration} min\nStatus: ${e.status}`);
+        }
+
+        function updateStats() {
+            document.getElementById('totalExams').textContent = exams.length;
+            document.getElementById('scheduledExams').textContent = exams.filter(e => e.status === 'scheduled').length;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displayExams();
+            window.scrollTo(0, 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            document.getElementById('searchInput').addEventListener('input', filterExams);
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userData');
+                window.location.href = '../login.html';
+            }
+        }
+    </script>
+</body>
+</html>

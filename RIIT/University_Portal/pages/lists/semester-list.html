@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semester List - University Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .list-page { margin-left: 280px; padding: 2rem; }
+        .list-header { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .list-header h1 { font-size: 2rem; margin: 0; }
+        .list-header-right { display: flex; gap: 1rem; align-items: center; }
+        .search-box { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.7rem 1rem; border-radius: 8px; color: white; width: 250px; }
+        .search-box::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .btn-add { background: white; color: var(--primary-color); border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .list-wrapper { background: white; padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
+        .list-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .list-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 1.5rem; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .stat-card p { margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f5f5f5; }
+        th { padding: 1rem; text-align: left; font-weight: 600; color: var(--dark-color); border-bottom: 2px solid #e0e0e0; }
+        td { padding: 1rem; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f9f9f9; }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-inactive { background: #f8d7da; color: #721c24; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .btn-action { padding: 0.5rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-view { background: #4ECDC4; color: white; }
+        .btn-edit { background: #FFD93D; color: #333; }
+        .btn-delete { background: #FF6B6B; color: white; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); }
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+        .pagination button { padding: 0.5rem 0.8rem; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 5px; }
+        .pagination button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .empty-state { text-align: center; padding: 3rem; color: #999; }
+        @media (max-width: 768px) { .list-page { margin-left: 0; padding: 1rem; } .list-header { flex-direction: column; text-align: center; gap: 1rem; } .search-box { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="sidebar"></div>
+    <div class="list-page">
+        <div class="list-header">
+            <div>
+                <h1><i class="fas fa-calendar-alt"></i> Semester List</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage all semesters</p>
+            </div>
+            <div class="list-header-right">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search semesters...">
+                <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Add Semester</button>
+            </div>
+        </div>
+
+        <div class="list-stats">
+            <div class="stat-card"><h3 id="totalSemesters">0</h3><p>Total Semesters</p></div>
+            <div class="stat-card"><h3 id="activeSemesters">0</h3><p>Active Semesters</p></div>
+        </div>
+
+        <div class="list-wrapper">
+            <div class="list-controls">
+                <div><span id="resultCount">0 results</span></div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="semesterTable">
+                    <thead>
+                        <tr>
+                            <th>Semester</th>
+                            <th>Course</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="semesterTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Semesters Found</h3>
+                </div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <div id="semesterModal" class="modal">
+        <div class="modal-background" onclick="closeAddModal()"></div>
+        <div class="modal-content">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title" id="modalTitle">Add New Semester</p>
+                    <button class="delete" aria-label="close" onclick="closeAddModal()"></button>
+                </header>
+                <section class="modal-card-body">
+                    <form id="semesterForm">
+                        <div class="field">
+                            <label class="label">Semester <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="number" id="semesterNum" placeholder="e.g., 1" min="1" max="8" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Course <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="semesterCourse" required>
+                                        <option value="">Select Course</option>
+                                        <option value="BCA">BCA</option>
+                                        <option value="BBA">BBA</option>
+                                        <option value="MCA">MCA</option>
+                                        <option value="MBA">MBA</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Start Date <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="date" id="startDate" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">End Date <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="date" id="endDate" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control"><label class="checkbox"><input type="checkbox" id="semesterStatus" checked> Active</label></div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" onclick="closeAddModal()">Cancel</button>
+                    <button class="button is-primary" onclick="saveSemester()">Save Semester</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/menu-data.js"></script>
+    <script>
+        let semesters = [];
+        let filteredSemesters = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+
+        function loadSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = `
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-graduation-cap"></i> University Portal</h2>
+                    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                <ul class="sidebar-menu"></ul>
+            `;
+            renderMenu();
+        }
+
+        function init() {
+            loadSidebar();
+            loadSemesters();
+            displaySemesters();
+            updateStats();
+        }
+
+        function loadSemesters() {
+            const saved = localStorage.getItem('semesterListData');
+            if (saved) {
+                semesters = JSON.parse(saved);
+            } else {
+                semesters = [
+                    { id: 1, semester: 1, course: 'BCA', startDate: '2024-01-15', endDate: '2024-04-15', status: 'active' },
+                    { id: 2, semester: 2, course: 'BCA', startDate: '2024-05-15', endDate: '2024-08-15', status: 'active' },
+                    { id: 3, semester: 1, course: 'BBA', startDate: '2024-01-15', endDate: '2024-04-15', status: 'active' },
+                    { id: 4, semester: 1, course: 'MCA', startDate: '2024-01-15', endDate: '2024-04-15', status: 'active' },
+                    { id: 5, semester: 1, course: 'MBA', startDate: '2024-01-15', endDate: '2024-04-15', status: 'active' }
+                ];
+                saveSemesters();
+            }
+            filteredSemesters = [...semesters];
+        }
+
+        function saveSemesters() {
+            localStorage.setItem('semesterListData', JSON.stringify(semesters));
+        }
+
+        function displaySemesters() {
+            const tbody = document.getElementById('semesterTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedSemesters = filteredSemesters.slice(start, end);
+
+            if (paginatedSemesters.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = paginatedSemesters.map(sem => `
+                <tr>
+                    <td><strong>Semester ${sem.semester}</strong></td>
+                    <td>${sem.course}</td>
+                    <td>${new Date(sem.startDate).toLocaleDateString()}</td>
+                    <td>${new Date(sem.endDate).toLocaleDateString()}</td>
+                    <td><span class="status-badge ${sem.status === 'active' ? 'status-active' : 'status-inactive'}">${sem.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editSemester(${sem.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteSemester(${sem.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            const totalPages = Math.ceil(filteredSemesters.length / itemsPerPage);
+            let paginationHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        function filterSemesters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredSemesters = semesters.filter(sem => {
+                return sem.course.toLowerCase().includes(searchTerm) || sem.semester.toString().includes(searchTerm);
+            });
+            currentPage = 1;
+            document.getElementById('resultCount').textContent = `${filteredSemesters.length} results`;
+            displaySemesters();
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Semester';
+            document.getElementById('semesterForm').reset();
+            document.getElementById('semesterModal').classList.add('is-active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('semesterModal').classList.remove('is-active');
+        }
+
+        function saveSemester() {
+            const semester = parseInt(document.getElementById('semesterNum').value);
+            const course = document.getElementById('semesterCourse').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const status = document.getElementById('semesterStatus').checked ? 'active' : 'inactive';
+
+            if (!semester || !course || !startDate || !endDate) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            if (editingId) {
+                const sem = semesters.find(s => s.id === editingId);
+                if (sem) {
+                    sem.semester = semester;
+                    sem.course = course;
+                    sem.startDate = startDate;
+                    sem.endDate = endDate;
+                    sem.status = status;
+                }
+            } else {
+                semesters.push({
+                    id: Date.now(),
+                    semester,
+                    course,
+                    startDate,
+                    endDate,
+                    status
+                });
+            }
+
+            saveSemesters();
+            filteredSemesters = [...semesters];
+            currentPage = 1;
+            displaySemesters();
+            updateStats();
+            closeAddModal();
+        }
+
+        function editSemester(id) {
+            const sem = semesters.find(s => s.id === id);
+            if (sem) {
+                editingId = id;
+                document.getElementById('modalTitle').textContent = 'Edit Semester';
+                document.getElementById('semesterNum').value = sem.semester;
+                document.getElementById('semesterCourse').value = sem.course;
+                document.getElementById('startDate').value = sem.startDate;
+                document.getElementById('endDate').value = sem.endDate;
+                document.getElementById('semesterStatus').checked = sem.status === 'active';
+                document.getElementById('semesterModal').classList.add('is-active');
+            }
+        }
+
+        function deleteSemester(id) {
+            if (confirm('Are you sure?')) {
+                semesters = semesters.filter(s => s.id !== id);
+                saveSemesters();
+                filteredSemesters = [...semesters];
+                currentPage = 1;
+                displaySemesters();
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalSemesters').textContent = semesters.length;
+            document.getElementById('activeSemesters').textContent = semesters.filter(s => s.status === 'active').length;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displaySemesters();
+            window.scrollTo(0, 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            document.getElementById('searchInput').addEventListener('input', filterSemesters);
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userData');
+                window.location.href = '../login.html';
+            }
+        }
+    </script>
+</body>
+</html>

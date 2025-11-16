@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher List - University Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .list-page { margin-left: 280px; padding: 2rem; }
+        .list-header { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .list-header h1 { font-size: 2rem; margin: 0; }
+        .list-header-right { display: flex; gap: 1rem; align-items: center; }
+        .search-box { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.7rem 1rem; border-radius: 8px; color: white; width: 250px; }
+        .search-box::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .btn-add { background: white; color: var(--primary-color); border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .list-wrapper { background: white; padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
+        .list-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 1.5rem; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .stat-card p { margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f5f5f5; }
+        th { padding: 1rem; text-align: left; font-weight: 600; color: var(--dark-color); border-bottom: 2px solid #e0e0e0; }
+        td { padding: 1rem; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f9f9f9; }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-active { background: #d4edda; color: #155724; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .btn-action { padding: 0.5rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-view { background: #4ECDC4; color: white; }
+        .btn-edit { background: #FFD93D; color: #333; }
+        .btn-delete { background: #FF6B6B; color: white; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); }
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+        .pagination button { padding: 0.5rem 0.8rem; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 5px; }
+        .pagination button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .empty-state { text-align: center; padding: 3rem; color: #999; }
+        @media (max-width: 768px) { .list-page { margin-left: 0; padding: 1rem; } .list-header { flex-direction: column; text-align: center; gap: 1rem; } .search-box { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="sidebar"></div>
+    <div class="list-page">
+        <div class="list-header">
+            <div>
+                <h1><i class="fas fa-chalkboard-user"></i> Teacher List</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage all teachers</p>
+            </div>
+            <div class="list-header-right">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search teachers...">
+                <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Add Teacher</button>
+            </div>
+        </div>
+
+        <div class="list-stats">
+            <div class="stat-card"><h3 id="totalTeachers">0</h3><p>Total Teachers</p></div>
+            <div class="stat-card"><h3 id="activeTeachers">0</h3><p>Active Teachers</p></div>
+        </div>
+
+        <div class="list-wrapper">
+            <div class="table-responsive">
+                <table id="teacherTable">
+                    <thead>
+                        <tr>
+                            <th>Teacher ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Teachers Found</h3>
+                </div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <div id="teacherModal" class="modal">
+        <div class="modal-background" onclick="closeAddModal()"></div>
+        <div class="modal-content">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title" id="modalTitle">Add New Teacher</p>
+                    <button class="delete" aria-label="close" onclick="closeAddModal()"></button>
+                </header>
+                <section class="modal-card-body">
+                    <form id="teacherForm">
+                        <div class="field">
+                            <label class="label">Name <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="text" id="teacherName" placeholder="Full Name" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Email <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="email" id="teacherEmail" placeholder="Email" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Department <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="teacherDept" required>
+                                        <option value="">Select Department</option>
+                                        <option value="CS">Computer Science</option>
+                                        <option value="BM">Business Management</option>
+                                        <option value="EN">English</option>
+                                        <option value="MA">Mathematics</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control"><label class="checkbox"><input type="checkbox" id="teacherStatus" checked> Active</label></div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" onclick="closeAddModal()">Cancel</button>
+                    <button class="button is-primary" onclick="saveTeacher()">Save Teacher</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/menu-data.js"></script>
+    <script>
+        let teachers = [];
+        let filteredTeachers = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+
+        function loadSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = `
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-graduation-cap"></i> University Portal</h2>
+                    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                <ul class="sidebar-menu"></ul>
+            `;
+            renderMenu();
+        }
+
+        function init() {
+            loadSidebar();
+            loadTeachers();
+            displayTeachers();
+            updateStats();
+        }
+
+        function loadTeachers() {
+            const saved = localStorage.getItem('teacherListData');
+            if (saved) {
+                teachers = JSON.parse(saved);
+            } else {
+                teachers = [
+                    { id: 'TCH001', name: 'Dr. Rajesh Kumar', email: 'rajesh@example.com', dept: 'CS', status: 'active' },
+                    { id: 'TCH002', name: 'Prof. Priya Singh', email: 'priya@example.com', dept: 'CS', status: 'active' },
+                    { id: 'TCH003', name: 'Dr. Amit Patel', email: 'amit@example.com', dept: 'BM', status: 'active' },
+                    { id: 'TCH004', name: 'Prof. Neha Sharma', email: 'neha@example.com', dept: 'EN', status: 'active' },
+                    { id: 'TCH005', name: 'Dr. Rohan Verma', email: 'rohan@example.com', dept: 'MA', status: 'active' }
+                ];
+                saveTeachers();
+            }
+            filteredTeachers = [...teachers];
+        }
+
+        function saveTeachers() {
+            localStorage.setItem('teacherListData', JSON.stringify(teachers));
+        }
+
+        function displayTeachers() {
+            const tbody = document.getElementById('teacherTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedTeachers = filteredTeachers.slice(start, end);
+
+            if (paginatedTeachers.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = paginatedTeachers.map(teacher => `
+                <tr>
+                    <td><strong>${teacher.id}</strong></td>
+                    <td>${teacher.name}</td>
+                    <td>${teacher.email}</td>
+                    <td>${teacher.dept}</td>
+                    <td><span class="status-badge status-active">${teacher.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editTeacher('${teacher.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteTeacher('${teacher.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
+            let paginationHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        function filterTeachers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredTeachers = teachers.filter(teacher => {
+                return teacher.name.toLowerCase().includes(searchTerm) || teacher.email.toLowerCase().includes(searchTerm);
+            });
+            currentPage = 1;
+            displayTeachers();
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Add New Teacher';
+            document.getElementById('teacherForm').reset();
+            document.getElementById('teacherModal').classList.add('is-active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('teacherModal').classList.remove('is-active');
+        }
+
+        function saveTeacher() {
+            const name = document.getElementById('teacherName').value.trim();
+            const email = document.getElementById('teacherEmail').value.trim();
+            const dept = document.getElementById('teacherDept').value;
+            const status = document.getElementById('teacherStatus').checked ? 'active' : 'inactive';
+
+            if (!name || !email || !dept) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            if (editingId) {
+                const teacher = teachers.find(t => t.id === editingId);
+                if (teacher) {
+                    teacher.name = name;
+                    teacher.email = email;
+                    teacher.dept = dept;
+                    teacher.status = status;
+                }
+            } else {
+                teachers.push({
+                    id: 'TCH' + String(Date.now()).slice(-6),
+                    name,
+                    email,
+                    dept,
+                    status
+                });
+            }
+
+            saveTeachers();
+            filteredTeachers = [...teachers];
+            currentPage = 1;
+            displayTeachers();
+            updateStats();
+            closeAddModal();
+        }
+
+        function editTeacher(id) {
+            const teacher = teachers.find(t => t.id === id);
+            if (teacher) {
+                editingId = id;
+                document.getElementById('modalTitle').textContent = 'Edit Teacher';
+                document.getElementById('teacherName').value = teacher.name;
+                document.getElementById('teacherEmail').value = teacher.email;
+                document.getElementById('teacherDept').value = teacher.dept;
+                document.getElementById('teacherStatus').checked = teacher.status === 'active';
+                document.getElementById('teacherModal').classList.add('is-active');
+            }
+        }
+
+        function deleteTeacher(id) {
+            if (confirm('Are you sure?')) {
+                teachers = teachers.filter(t => t.id !== id);
+                saveTeachers();
+                filteredTeachers = [...teachers];
+                currentPage = 1;
+                displayTeachers();
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalTeachers').textContent = teachers.length;
+            document.getElementById('activeTeachers').textContent = teachers.filter(t => t.status === 'active').length;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displayTeachers();
+            window.scrollTo(0, 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            document.getElementById('searchInput').addEventListener('input', filterTeachers);
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userData');
+                window.location.href = '../login.html';
+            }
+        }
+    </script>
+</body>
+</html>

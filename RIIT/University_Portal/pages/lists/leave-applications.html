@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Applications - University Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .list-page { margin-left: 280px; padding: 2rem; }
+        .list-header { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 2rem; border-radius: 15px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .list-header h1 { font-size: 2rem; margin: 0; }
+        .list-header-right { display: flex; gap: 1rem; align-items: center; }
+        .search-box { background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.7rem 1rem; border-radius: 8px; color: white; width: 250px; }
+        .search-box::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .btn-add { background: white; color: var(--primary-color); border: none; padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); }
+        .list-wrapper { background: white; padding: 2rem; border-radius: 15px; box-shadow: var(--shadow); }
+        .list-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: linear-gradient(135deg, var(--primary-color) 0%, #7B68FF 100%); color: white; padding: 1.5rem; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .stat-card p { margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 0.9rem; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f5f5f5; }
+        th { padding: 1rem; text-align: left; font-weight: 600; color: var(--dark-color); border-bottom: 2px solid #e0e0e0; }
+        td { padding: 1rem; border-bottom: 1px solid #e0e0e0; }
+        tr:hover { background: #f9f9f9; }
+        .status-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .action-buttons { display: flex; gap: 0.5rem; }
+        .btn-action { padding: 0.5rem 0.8rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease; }
+        .btn-edit { background: #FFD93D; color: #333; }
+        .btn-delete { background: #FF6B6B; color: white; }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); }
+        .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }
+        .pagination button { padding: 0.5rem 0.8rem; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 5px; }
+        .pagination button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .empty-state { text-align: center; padding: 3rem; color: #999; }
+        @media (max-width: 768px) { .list-page { margin-left: 0; padding: 1rem; } .list-header { flex-direction: column; text-align: center; gap: 1rem; } .search-box { width: 100%; } }
+    </style>
+</head>
+<body>
+    <div id="sidebar" class="sidebar"></div>
+    <div class="list-page">
+        <div class="list-header">
+            <div>
+                <h1><i class="fas fa-file-alt"></i> Leave Applications</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Manage leave applications</p>
+            </div>
+            <div class="list-header-right">
+                <input type="text" class="search-box" id="searchInput" placeholder="Search applications...">
+                <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Apply Leave</button>
+            </div>
+        </div>
+
+        <div class="list-stats">
+            <div class="stat-card"><h3 id="totalLeaves">0</h3><p>Total Applications</p></div>
+            <div class="stat-card"><h3 id="approvedLeaves">0</h3><p>Approved</p></div>
+        </div>
+
+        <div class="list-wrapper">
+            <div class="table-responsive">
+                <table id="leaveTable">
+                    <thead>
+                        <tr>
+                            <th>Application ID</th>
+                            <th>Name</th>
+                            <th>From Date</th>
+                            <th>To Date</th>
+                            <th>Days</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaveTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No Leave Applications Found</h3>
+                </div>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <div id="leaveModal" class="modal">
+        <div class="modal-background" onclick="closeAddModal()"></div>
+        <div class="modal-content">
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title" id="modalTitle">Apply for Leave</p>
+                    <button class="delete" aria-label="close" onclick="closeAddModal()"></button>
+                </header>
+                <section class="modal-card-body">
+                    <form id="leaveForm">
+                        <div class="field">
+                            <label class="label">Name <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="text" id="leaveName" placeholder="Name" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">From Date <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="date" id="leaveFromDate" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">To Date <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><input class="input" type="date" id="leaveToDate" required></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Reason <span style="color: #FF6B6B;">*</span></label>
+                            <div class="control"><textarea class="textarea" id="leaveReason" placeholder="Reason" required></textarea></div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Status</label>
+                            <div class="control">
+                                <div class="select">
+                                    <select id="leaveStatus">
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button" onclick="closeAddModal()">Cancel</button>
+                    <button class="button is-primary" onclick="saveLeave()">Save Application</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/menu-data.js"></script>
+    <script>
+        let leaves = [];
+        let filteredLeaves = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let editingId = null;
+
+        function loadSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = `
+                <div class="sidebar-header">
+                    <h2><i class="fas fa-graduation-cap"></i> University Portal</h2>
+                    <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+                </div>
+                <ul class="sidebar-menu"></ul>
+            `;
+            renderMenu();
+        }
+
+        function init() {
+            loadSidebar();
+            loadLeaves();
+            displayLeaves();
+            updateStats();
+        }
+
+        function loadLeaves() {
+            const saved = localStorage.getItem('leaveApplicationsData');
+            if (saved) {
+                leaves = JSON.parse(saved);
+            } else {
+                leaves = [
+                    { id: 'LEV001', name: 'Raj Kumar', fromDate: '2024-12-01', toDate: '2024-12-05', days: 5, status: 'approved' },
+                    { id: 'LEV002', name: 'Priya Singh', fromDate: '2024-12-10', toDate: '2024-12-12', days: 3, status: 'pending' },
+                    { id: 'LEV003', name: 'Amit Patel', fromDate: '2024-11-20', toDate: '2024-11-22', days: 3, status: 'approved' },
+                    { id: 'LEV004', name: 'Neha Sharma', fromDate: '2024-12-15', toDate: '2024-12-17', days: 3, status: 'rejected' },
+                    { id: 'LEV005', name: 'Rohan Verma', fromDate: '2024-12-08', toDate: '2024-12-10', days: 3, status: 'pending' }
+                ];
+                saveLeaves();
+            }
+            filteredLeaves = [...leaves];
+        }
+
+        function saveLeaves() {
+            localStorage.setItem('leaveApplicationsData', JSON.stringify(leaves));
+        }
+
+        function displayLeaves() {
+            const tbody = document.getElementById('leaveTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedLeaves = filteredLeaves.slice(start, end);
+
+            if (paginatedLeaves.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = paginatedLeaves.map(l => `
+                <tr>
+                    <td><strong>${l.id}</strong></td>
+                    <td>${l.name}</td>
+                    <td>${new Date(l.fromDate).toLocaleDateString()}</td>
+                    <td>${new Date(l.toDate).toLocaleDateString()}</td>
+                    <td>${l.days}</td>
+                    <td><span class="status-badge status-${l.status}">${l.status.charAt(0).toUpperCase() + l.status.slice(1)}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-action btn-edit" onclick="editLeave(${leaves.indexOf(l)})" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action btn-delete" onclick="deleteLeave(${leaves.indexOf(l)})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            const totalPages = Math.ceil(filteredLeaves.length / itemsPerPage);
+            let paginationHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+            }
+            document.getElementById('pagination').innerHTML = paginationHTML;
+        }
+
+        function filterLeaves() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredLeaves = leaves.filter(l => l.name.toLowerCase().includes(searchTerm) || l.id.includes(searchTerm));
+            currentPage = 1;
+            displayLeaves();
+        }
+
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Apply for Leave';
+            document.getElementById('leaveForm').reset();
+            document.getElementById('leaveModal').classList.add('is-active');
+        }
+
+        function closeAddModal() {
+            document.getElementById('leaveModal').classList.remove('is-active');
+        }
+
+        function saveLeave() {
+            const name = document.getElementById('leaveName').value.trim();
+            const fromDate = document.getElementById('leaveFromDate').value;
+            const toDate = document.getElementById('leaveToDate').value;
+            const reason = document.getElementById('leaveReason').value.trim();
+            const status = document.getElementById('leaveStatus').value;
+
+            if (!name || !fromDate || !toDate || !reason) {
+                alert('Please fill all required fields');
+                return;
+            }
+
+            const days = Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (editingId !== null) {
+                leaves[editingId].name = name;
+                leaves[editingId].fromDate = fromDate;
+                leaves[editingId].toDate = toDate;
+                leaves[editingId].days = days;
+                leaves[editingId].status = status;
+            } else {
+                leaves.push({
+                    id: 'LEV' + String(Date.now()).slice(-6),
+                    name,
+                    fromDate,
+                    toDate,
+                    days,
+                    status
+                });
+            }
+
+            saveLeaves();
+            filteredLeaves = [...leaves];
+            currentPage = 1;
+            displayLeaves();
+            updateStats();
+            closeAddModal();
+        }
+
+        function editLeave(index) {
+            const l = leaves[index];
+            editingId = index;
+            document.getElementById('modalTitle').textContent = 'Edit Leave Application';
+            document.getElementById('leaveName').value = l.name;
+            document.getElementById('leaveFromDate').value = l.fromDate;
+            document.getElementById('leaveToDate').value = l.toDate;
+            document.getElementById('leaveStatus').value = l.status;
+            document.getElementById('leaveModal').classList.add('is-active');
+        }
+
+        function deleteLeave(index) {
+            if (confirm('Are you sure?')) {
+                leaves.splice(index, 1);
+                saveLeaves();
+                filteredLeaves = [...leaves];
+                currentPage = 1;
+                displayLeaves();
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalLeaves').textContent = leaves.length;
+            document.getElementById('approvedLeaves').textContent = leaves.filter(l => l.status === 'approved').length;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            displayLeaves();
+            window.scrollTo(0, 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            document.getElementById('searchInput').addEventListener('input', filterLeaves);
+        });
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userData');
+                window.location.href = '../login.html';
+            }
+        }
+    </script>
+</body>
+</html>

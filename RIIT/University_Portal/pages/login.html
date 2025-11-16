@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - University Portal</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/bulma.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <style>
+        .login-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .login-tab-btn {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .login-tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .login-tab-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .login-tab-content {
+            display: none;
+        }
+
+        .login-tab-content.active {
+            display: block;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .remember-forgot a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .remember-forgot a:hover {
+            text-decoration: underline;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .otp-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .otp-input input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .otp-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(91, 79, 255, 0.1);
+        }
+
+        .social-login {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+            color: #999;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #e0e0e0;
+        }
+
+        .divider span {
+            margin: 0 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <!-- Illustration Side -->
+            <div class="login-illustration">
+                <div class="login-illustration-content">
+                    <div class="login-illustration-icon">🎓</div>
+                    <h2>Welcome Back!</h2>
+                    <p>Access your university portal and manage your academic journey.</p>
+                </div>
+            </div>
+
+            <!-- Form Side -->
+            <div class="login-form">
+                <h2>Login</h2>
+
+                <!-- Login Tabs -->
+                <div class="login-tabs">
+                    <button class="login-tab-btn active" onclick="switchTab('standard')">
+                        <i class="fas fa-user"></i> Standard
+                    </button>
+                    <button class="login-tab-btn" onclick="switchTab('otp')">
+                        <i class="fas fa-mobile-alt"></i> OTP
+                    </button>
+                    <button class="login-tab-btn" onclick="switchTab('twoStep')">
+                        <i class="fas fa-shield-alt"></i> 2-Step
+                    </button>
+                </div>
+
+                <!-- Standard Login -->
+                <div id="standard" class="login-tab-content active">
+                    <form id="standardLoginForm">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        </div>
+
+                        <div class="remember-forgot">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="remember" name="remember">
+                                <label for="remember" style="margin: 0; cursor: pointer;">Remember me</label>
+                            </div>
+                            <a href="forgot-password.html">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                            Login
+                        </button>
+                    </form>
+
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button class="social-btn" title="Login with Google">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button class="social-btn" title="Login with Facebook">
+                            <i class="fab fa-facebook"></i>
+                        </button>
+                        <button class="social-btn" title="Login with Microsoft">
+                            <i class="fab fa-microsoft"></i>
+                        </button>
+                    </div>
+
+                    <p class="signup-link" style="margin-top: 1.5rem;">
+                        Don't have an account? <a href="signup.html">Sign up here</a>
+                    </p>
+                </div>
+
+                <!-- OTP Login -->
+                <div id="otp" class="login-tab-content">
+                    <form id="otpLoginForm">
+                        <div class="form-group">
+                            <label for="mobileOtp">Mobile Number</label>
+                            <input type="tel" id="mobileOtp" name="mobile" placeholder="+91 98765 43210" required>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" style="width: 100%; padding: 0.8rem; margin-bottom: 1rem;">
+                            Send OTP
+                        </button>
+
+                        <div class="form-group">
+                            <label>Enter OTP</label>
+                            <div class="otp-input">
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                            Verify OTP
+                        </button>
+                    </form>
+
+                    <p class="signup-link" style="margin-top: 1.5rem;">
+                        Don't have an account? <a href="signup.html">Sign up here</a>
+                    </p>
+                </div>
+
+                <!-- Two-Step Login -->
+                <div id="twoStep" class="login-tab-content">
+                    <form id="twoStepForm">
+                        <div class="form-group">
+                            <label for="emailTwoStep">Email Address</label>
+                            <input type="email" id="emailTwoStep" name="email" placeholder="your@email.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="passwordTwoStep">Password</label>
+                            <input type="password" id="passwordTwoStep" name="password" placeholder="••••••••" required>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" style="width: 100%; padding: 0.8rem; margin-bottom: 1rem;">
+                            Next Step
+                        </button>
+
+                        <div class="form-group">
+                            <label>Verification Code (sent to your email)</label>
+                            <div class="otp-input">
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                                <input type="text" maxlength="1" class="otp-digit" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                            Complete Login
+                        </button>
+                    </form>
+
+                    <p class="signup-link" style="margin-top: 1.5rem;">
+                        Don't have an account? <a href="signup.html">Sign up here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../js/script.js"></script>
+
+    <script>
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.login-tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.login-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.closest('.login-tab-btn').classList.add('active');
+        }
+
+        // Standard Login Form
+        document.getElementById('standardLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+
+            if (!email || !password) {
+                UniversityPortal.showAlert('Please fill all fields', 'error');
+                return;
+            }
+
+            // Simulate login
+            Swal.fire({
+                title: 'Logging in...',
+                html: '<div class="spinner"></div>',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            setTimeout(() => {
+                Swal.close();
+                
+                const userData = {
+                    name: email.split('@')[0],
+                    email: email,
+                    role: 'student',
+                    loginTime: new Date().toLocaleString()
+                };
+
+                localStorage.setItem('userData', JSON.stringify(userData));
+                if (remember) {
+                    localStorage.setItem('rememberMe', 'true');
+                }
+
+                UniversityPortal.showAlert('Login successful!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            }, 1500);
+        });
+
+        // OTP Login Form
+        document.getElementById('otpLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const otpInputs = document.querySelectorAll('#otp .otp-digit');
+            let otp = '';
+            
+            otpInputs.forEach(input => {
+                otp += input.value;
+            });
+
+            if (otp.length !== 6) {
+                UniversityPortal.showAlert('Please enter complete OTP', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Verifying OTP...',
+                html: '<div class="spinner"></div>',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            setTimeout(() => {
+                Swal.close();
+                UniversityPortal.showAlert('OTP verified successfully!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            }, 1500);
+        });
+
+        // Two-Step Login Form
+        document.getElementById('twoStepForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const codeInputs = document.querySelectorAll('#twoStep .otp-digit');
+            let code = '';
+            
+            codeInputs.forEach(input => {
+                code += input.value;
+            });
+
+            if (code.length !== 4) {
+                UniversityPortal.showAlert('Please enter verification code', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Verifying...',
+                html: '<div class="spinner"></div>',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            setTimeout(() => {
+                Swal.close();
+                UniversityPortal.showAlert('Login successful!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            }, 1500);
+        });
+
+        // OTP digit input auto-focus
+        document.querySelectorAll('.otp-digit').forEach((input, index) => {
+            input.addEventListener('keyup', function(e) {
+                if (this.value.length === 1 && index < document.querySelectorAll('.otp-digit').length - 1) {
+                    document.querySelectorAll('.otp-digit')[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    document.querySelectorAll('.otp-digit')[index - 1].focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
